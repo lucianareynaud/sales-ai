@@ -16,6 +16,11 @@ A FastAPI application that transcribes audio and video files using OpenAI's Whis
 
 - Upload audio and video files for transcription
 - Supports multiple file formats (MP3, WAV, MP4, etc.)
+- Advanced audio processing with automatic extraction from video files
+- Multi-step audio optimization pipeline for improved transcription quality
+- Intelligent chunking for handling large files
+- Adaptive compression based on file size
+- Error resilience with retry mechanisms
 - Stores transcripts in a Supabase database
 - View and manage all transcriptions
 
@@ -29,6 +34,7 @@ The application includes an AI-powered sales intelligence feature that can analy
 - Sales opportunities
 - Research triggers for follow-up
 - Contextual information for personalization
+- SPIN and BANT frameworks analysis
 
 To use the feature:
 1. View a transcript
@@ -56,9 +62,9 @@ graph TB
     subgraph Backend
         API[FastAPI Application]
         Transcribe[Transcription Service]
+        Media[Media Processing]
         Analysis[Sales Analysis Service]
         DB[(Supabase Database)]
-        Storage[(Supabase Storage)]
     end
 
     subgraph External Services
@@ -73,19 +79,21 @@ graph TB
     API --> Transcribe
     API --> Analysis
     API --> DB
-    API --> Storage
     
+    Transcribe --> Media
     Transcribe --> Whisper
+    Media --> Transcribe
     Analysis --> GPT
-    Transcribe --> Storage
-    Storage --> DB
+    
+    DB --> Analysis
+    Transcribe --> DB
 
     classDef service fill:#f9f,stroke:#333,stroke-width:2px
     classDef database fill:#bbf,stroke:#333,stroke-width:2px
     classDef external fill:#bfb,stroke:#333,stroke-width:2px
     
-    class Transcribe,Analysis service
-    class DB,Storage database
+    class Transcribe,Analysis,Media service
+    class DB database
     class Whisper,GPT external
 ```
 
@@ -96,31 +104,44 @@ graph TB
    - Responsive design for desktop and mobile use
    - Real-time feedback for file uploads and processing
    - Interactive transcript viewer with analysis capabilities
+   - Error handling and recovery
 
 2. **API Layer (FastAPI)**
    - RESTful API endpoints for all operations
    - File upload handling with validation
    - Authentication and authorization (via Supabase)
-   - WebSocket support for real-time updates
    - Request validation using Pydantic models
 
-3. **Transcription Service**
+3. **Media Processing Service**
+   - Advanced audio extraction from video files
+   - Multi-step audio optimization pipeline:
+     - High-quality audio extraction (16kHz mono)
+     - Volume normalization
+     - Noise reduction when needed
+   - Adaptive compression based on file size
+   - Intelligent chunking system for handling large files
+   - Format conversion between audio formats
+
+4. **Transcription Service**
    - Handles audio/video file processing
    - Integrates with OpenAI's Whisper API
    - Supports multiple file formats
    - Manages temporary file storage
    - Handles language detection and transcription
+   - Progress tracking for multi-chunk transcriptions
+   - Intelligent merging of transcript chunks
+   - Error recovery with retry mechanisms
 
-4. **Sales Analysis Service**
+5. **Sales Analysis Service**
    - LLM-powered analysis pipeline
    - Extracts structured data from transcripts
    - Identifies key sales intelligence points
    - Generates actionable insights
    - Uses GPT-4 for advanced analysis
+   - SPIN and BANT framework analysis
 
-5. **Data Layer**
+6. **Data Layer**
    - Supabase PostgreSQL database for transcript storage
-   - Supabase Storage for media file management
    - Efficient indexing for quick transcript retrieval
    - Secure file access control
 
@@ -128,13 +149,37 @@ graph TB
 
 1. **File Upload Process**
    ```
-   Client -> FastAPI -> Local Storage -> Whisper API -> Supabase Storage -> Database
+   Client -> FastAPI -> Media Processing -> Chunking (if needed) -> Whisper API -> Database
    ```
 
-2. **Transcription Analysis**
+2. **Video Processing Flow**
+   ```
+   Video File -> Audio Extraction -> Audio Optimization -> Size Check -> Chunking (if needed) -> Transcription
+   ```
+
+3. **Transcription Analysis**
    ```
    Database -> Analysis Service -> GPT API -> Structured Data -> Client
    ```
+
+### Intelligent Chunking System
+
+The application includes a sophisticated chunking system to handle files of any size:
+
+1. **Adaptive Compression**
+   - Uses progressively lower bitrates for larger files
+   - Implements multiple compression attempts
+   - Includes safety margins to stay under API limits
+
+2. **Size-based Processing**
+   - Automatic detection of file size
+   - Optimized processing paths for different file sizes
+   - Emergency fallback options for problematic files
+
+3. **Chunk Management**
+   - Overlap between chunks for better transcript merging
+   - Tracking and logging of chunk processing
+   - Retry mechanisms for failed chunks
 
 ### Security Architecture
 
@@ -242,23 +287,4 @@ docker-compose logs -f
 docker compose down
 # or
 docker-compose down
-```
-
-## Application Flow (app.py)
-
-```mermaid
-flowchart TD
-    A[Browser] --> |Upload| B[FastAPI /transcribe]
-    B -->|File| C[Transcription Service]
-    C -->|Audio/Text| D[Whisper/OpenAI]
-    C -->|Writes| E[(Supabase Storage)]
-    C -->|Writes| F[(Supabase DB)]
-    B -->|JSON list| F
-    F -.->|Files| E
-    
-    A -->|Analyze| B2[FastAPI /transcripts/id/analyze]
-    B2 -->|Process| G[analysis_svc.pipeline]
-    G -->|Reads| F
-    G -->|Calls| D
-    G -->|Returns| A
 ```
