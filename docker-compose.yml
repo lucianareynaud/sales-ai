@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  whisper-transcription:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: whisper-transcription
+    restart: unless-stopped
+    ports:
+      - "8081:8000"
+    volumes:
+      - ${PWD}/uploads:/app/uploads
+      - ${PWD}/.env:/app/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=UTC
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    command: python app.py
+
+# Você pode descomentar isso se quiser rodar o Supabase localmente para testes
+# supabase:
+#   image: supabase/supabase-dev:latest
+#   ports:
+#     - "8080:8000"
+#     - "5432:5432"  # PostgreSQL
+#   volumes:
+#     - ./.supabase/data:/var/lib/postgresql/data
+#   environment:
+#     - POSTGRES_PASSWORD=postgres
+#     - SUPABASE_API_KEY=your-api-key-here 

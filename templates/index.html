@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales AI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <style>
+        :root {
+            --primary-color: #7158e2;
+            --primary-dark: #5e48b5;
+            --error-color: #e74c3c;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+            --border-color: #eee;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f9f9f9;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        header p {
+            color: #666;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        nav a:hover, nav a.active {
+            background-color: var(--light-gray);
+        }
+        
+        .card {
+            padding: 2rem;
+            border-radius: 0.75rem;
+            background-color: #fff;
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Upload Area */
+        .upload-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-area h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-area .separator {
+            color: #999;
+            margin: 0.5rem 0;
+        }
+        
+        .file-input-container {
+            margin: 1rem 0;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .primary-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .primary-button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .formats-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        
+        /* Results Area */
+        .result-area {
+            display: none;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .result-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .transcript-box {
+            padding: 1.5rem;
+            background-color: var(--light-gray);
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+        
+        .metadata {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--light-gray);
+            border-radius: 0.5rem;
+        }
+        
+        .metadata-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .metadata-item i {
+            color: var(--primary-color);
+        }
+        
+        .metadata-label {
+            font-weight: 500;
+        }
+        
+        .action-button {
+            background-color: var(--light-gray);
+            color: var(--text-color);
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .action-button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* Loader */
+        .loader-area {
+            display: none;
+            text-align: center;
+            padding: 3rem 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+        
+        .spinner {
+            width: 4rem;
+            height: 4rem;
+            border: 0.5rem solid rgba(113, 88, 226, 0.2);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            animation: spinner 1s linear infinite;
+        }
+        
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Transcripts List */
+        .transcripts-list {
+            display: none;
+            flex-direction: column;
+        }
+        
+        .transcript-item {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: var(--light-gray);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .transcript-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .transcript-item h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .transcript-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .view-all-btn {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        
+        footer {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 2rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .result-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .result-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .metadata {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+        
+        .demo-banner {
+            background-color: #ffeeba;
+            color: #856404;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .demo-banner i {
+            margin-right: 0.5rem;
+        }
+        
+        /* Error Area */
+        .error-area {
+            display: none;
+            text-align: center;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            color: var(--error-color);
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            padding: 1rem;
+            background-color: var(--light-gray);
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+            font-family: monospace;
+            text-align: left;
+            width: 100%;
+            max-width: 600px;
+            word-break: break-word;
+        }
+        
+        /* Sales Intelligence Analysis */
+        .analyze-btn {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .sales-intelligence {
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .sales-intelligence h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sales-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .sales-data-item {
+            background-color: var(--light-gray);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .sales-data-item h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .sales-data-item ul {
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .sales-data-item p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="ri-mic-line"></i> Whisper Transcription</h1>
+        </header>
+        
+        <div class="demo-banner" id="demo-banner">
+            <i class="ri-information-line"></i> Executando em modo de demonstração. As transcrições são simuladas.
+        </div>
+        
+        <nav>
+            <ul>
+                <li><a href="#" class="active" id="new-transcription-nav">New Transcription</a></li>
+                <li><a href="#" id="view-all-nav">View All Transcripts</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- Upload Area -->
+            <div class="card" id="upload-area">
+                <form action="/transcribe/" method="post" enctype="multipart/form-data" class="upload-area">
+                    <i class="ri-upload-cloud-line upload-icon"></i>
+                    <h2>Drag & drop your file here</h2>
+                    <span class="separator">or</span>
+                    
+                    <div class="file-input-container">
+                        <button type="button" class="primary-button" id="choose-file-btn">
+                            <i class="ri-folder-add-line"></i> Choose File
+                        </button>
+                        <input type="file" name="file" id="file-input" required hidden>
+                    </div>
+                    
+                    <p class="formats-text">Supports all common audio and video formats: MP3, WAV, <strong>M4A</strong>, MP4, MOV, FLAC, OGG, AAC, AVI, MKV, WEBM, and many more</p>
+                    
+                    <div id="file-details" style="display: none; margin-top: 1rem; text-align: center;">
+                        <p id="selected-filename" style="font-weight: bold;"></p>
+                        <p id="selected-filesize" style="color: #666; font-size: 0.9rem;"></p>
+                        
+                        <button type="submit" class="primary-button" style="margin-top: 1rem;">
+                            <i class="ri-mic-line"></i> Transcribe
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Loader -->
+            <div class="card loader-area" id="loader-area">
+                <div class="spinner"></div>
+                <p>Transcribing your file...</p>
+                <p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">This may take a few moments</p>
+            </div>
+
+            <!-- Results Area -->
+            <div class="card result-area" id="result-area">
+                <div class="result-header">
+                    <h2>Transcription Result</h2>
+                    <div class="result-actions">
+                        <button class="action-button" id="copy-btn">
+                            <i class="ri-file-copy-line"></i> Copiar
+                        </button>
+                        <button class="action-button" id="download-btn">
+                            <i class="ri-download-line"></i> Download Texto
+                        </button>
+                        <button class="action-button" id="analyze-btn">
+                            <i class="ri-focus-3-line"></i> Analisar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="metadata">
+                    <div class="metadata-item">
+                        <i class="ri-time-line"></i>
+                        <span class="metadata-label">Duração:</span>
+                        <span id="duration-value">--:--:--</span>
+                    </div>
+                    <div class="metadata-item">
+                        <i class="ri-global-line"></i>
+                        <span class="metadata-label">Idioma:</span>
+                        <span id="language-value">---</span>
+                    </div>
+                    <div class="metadata-item">
+                        <i class="ri-file-line"></i>
+                        <span class="metadata-label">Arquivo:</span>
+                        <span id="filename-value">-----</span>
+                    </div>
+                </div>
+                
+                <div class="transcript-box" id="transcript-text"></div>
+                
+                <div class="analyze-btn" id="analyze-section">
+                    <button class="primary-button" id="analyze-sales-btn">
+                        <i class="ri-ai-generate"></i> Analyze Sales Intelligence
+                    </button>
+                </div>
+                
+                <div class="sales-intelligence" id="sales-intelligence">
+                    <h3><i class="ri-bar-chart-box-line"></i> Sales Intelligence Analysis</h3>
+                    <div class="sales-data" id="sales-data">
+                        <!-- Sales data will be displayed here -->
+                    </div>
+                </div>
+                
+                <div class="view-all-btn">
+                    <button class="primary-button" id="new-transcription-btn">
+                        <i class="ri-file-add-line"></i> Transcribe Another File
+                    </button>
+                    <button class="action-button" id="view-all-btn">
+                        <i class="ri-list-check"></i> View All Transcripts
+                    </button>
+                </div>
+            </div>
+
+            <!-- Transcripts List -->
+            <div class="card transcripts-list" id="transcripts-list">
+                <div class="result-header">
+                    <h2>All Transcripts</h2>
+                    <button class="primary-button" id="new-transcription-list-btn">
+                        <i class="ri-file-add-line"></i> New Transcription
+                    </button>
+                </div>
+                
+                <div id="transcripts-container">
+                    <!-- Transcripts will be loaded here -->
+                    <div class="spinner" id="transcripts-loading"></div>
+                </div>
+            </div>
+
+            <!-- Error Area -->
+            <div class="card error-area" id="error-area">
+                <i class="ri-error-warning-line error-icon"></i>
+                <h2 style="margin-bottom: 1rem;">Transcription Failed</h2>
+                
+                <div class="error-message" id="error-message"></div>
+                
+                <p>Please try again with a different file or check your connection.</p>
+                
+                <button class="primary-button" id="error-back-btn" style="margin-top: 1rem;">
+                    <i class="ri-arrow-left-line"></i> Try Again
+                </button>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by OpenAI Whisper</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const uploadArea = document.getElementById('upload-area');
+            const loaderArea = document.getElementById('loader-area');
+            const resultArea = document.getElementById('result-area');
+            const errorArea = document.getElementById('error-area');
+            const transcriptsList = document.getElementById('transcripts-list');
+            
+            const fileInput = document.getElementById('file-input');
+            const chooseFileBtn = document.getElementById('choose-file-btn');
+            const fileDetails = document.getElementById('file-details');
+            const selectedFilename = document.getElementById('selected-filename');
+            const selectedFilesize = document.getElementById('selected-filesize');
+            
+            const transcriptText = document.getElementById('transcript-text');
+            const durationText = document.getElementById('duration-value');
+            const languageText = document.getElementById('language-value');
+            const sourceFilename = document.getElementById('filename-value');
+            
+            let currentTranscriptId = '';
+            
+            const copyBtn = document.getElementById('copy-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            
+            // Get both analyze buttons
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const analyzeSalesBtn = document.getElementById('analyze-sales-btn');
+            
+            const salesIntelligence = document.getElementById('sales-intelligence');
+            const salesData = document.getElementById('sales-data');
+            const newTranscriptionBtn = document.getElementById('new-transcription-btn');
+            const newTranscriptionListBtn = document.getElementById('new-transcription-list-btn');
+            const viewAllBtn = document.getElementById('view-all-btn');
+            const viewAllNav = document.getElementById('view-all-nav');
+            const newTranscriptionNav = document.getElementById('new-transcription-nav');
+            const errorBackBtn = document.getElementById('error-back-btn');
+            const errorMessage = document.getElementById('error-message');
+            
+            // Set up drag and drop
+            const form = document.querySelector('form');
+            form.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                form.classList.add('dragover');
+            });
+            
+            form.addEventListener('dragleave', () => {
+                form.classList.remove('dragover');
+            });
+            
+            form.addEventListener('drop', (e) => {
+                e.preventDefault();
+                form.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateFileDetails();
+                }
+            });
+            
+            // Choose file button
+            chooseFileBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // File selection
+            fileInput.addEventListener('change', updateFileDetails);
+            
+            function updateFileDetails() {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    selectedFilename.textContent = file.name;
+                    selectedFilesize.textContent = formatFileSize(file.size);
+                    fileDetails.style.display = 'block';
+                    
+                    // Validate file type
+                    const validFileType = validateFileType(file);
+                    if (!validFileType) {
+                        // Show warning but still allow upload (server will validate)
+                        selectedFilename.innerHTML = `${file.name} <span style="color: #ff9800;">(format may not be supported)</span>`;
+                    }
+                } else {
+                    fileDetails.style.display = 'none';
+                }
+            }
+            
+            // Validate file type client-side
+            function validateFileType(file) {
+                const fileName = file.name.toLowerCase();
+                const fileType = file.type;
+                
+                // List of common audio/video MIME types
+                const validMimeTypes = [
+                    'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/x-wav',
+                    'audio/mp4', 'audio/m4a', 'audio/x-m4a', 'application/octet-stream', 
+                    'audio/aac', 'audio/ogg', 'audio/mp4a-latm', 'audio/x-hx-aac-adts',
+                    'audio/webm', 'audio/flac', 'audio/x-flac', 'application/x-mpegURL',
+                    'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm',
+                    'video/x-matroska', 'video/mpeg', 'video/3gpp'
+                ];
+                
+                // Check MIME type
+                if (validMimeTypes.includes(fileType)) {
+                    return true;
+                }
+                
+                // Check file extension
+                const validExtensions = [
+                    '.mp3', '.wav', '.m4a', '.mp4', '.mov', '.ogg', '.flac', 
+                    '.aac', '.avi', '.mkv', '.webm', '.m4a', '.m4b', '.m4v', 
+                    '.m4p', '.m4r', '.3gp', '.aiff'
+                ];
+                
+                for (const ext of validExtensions) {
+                    if (fileName.endsWith(ext)) {
+                        return true;
+                    }
+                }
+                
+                // Fallback: check if it's any audio or video type based on MIME type prefix
+                if (fileType.startsWith('audio/') || fileType.startsWith('video/')) {
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            // Format file size
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' bytes';
+                else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                else return (bytes / 1048576).toFixed(1) + ' MB';
+            }
+            
+            // Format duration
+            function formatDuration(seconds) {
+                if (!seconds) return 'Unknown';
+                
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const remainingSeconds = seconds % 60;
+                
+                if (hours > 0) {
+                    return `${hours}h ${minutes}m ${remainingSeconds}s`;
+                } else if (minutes > 0) {
+                    return `${minutes}m ${remainingSeconds}s`;
+                } else {
+                    return `${remainingSeconds}s`;
+                }
+            }
+            
+            // Form submission
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('Please select a file first');
+                    return;
+                }
+                
+                const file = fileInput.files[0];
+                
+                // Double-check file type
+                if (!validateFileType(file)) {
+                    const proceed = confirm(
+                        `The file type "${file.type || file.name.split('.').pop()}" may not be supported.\n\n` +
+                        `Supported formats include MP3, WAV, M4A, MP4, etc.\n\n` +
+                        `Would you like to try uploading anyway?`
+                    );
+                    if (!proceed) return;
+                }
+                
+                // Show loader
+                uploadArea.style.display = 'none';
+                loaderArea.style.display = 'flex';
+                resultArea.style.display = 'none';
+                errorArea.style.display = 'none';
+                transcriptsList.style.display = 'none';
+                
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    // Send request
+                    const response = await fetch('/transcribe/', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || `Error ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Display results
+                    displayResults(data);
+                } catch (error) {
+                    // Handle error
+                    console.error('Transcription failed:', error);
+                    
+                    // Display error message
+                    let errorMsg = error.message;
+                    
+                    errorMessage.innerHTML = errorMsg;
+                    
+                    uploadArea.style.display = 'none';
+                    loaderArea.style.display = 'none';
+                    resultArea.style.display = 'none';
+                    errorArea.style.display = 'flex';
+                }
+            });
+            
+            // Fetch all transcripts
+            async function fetchTranscripts() {
+                const container = document.getElementById('transcripts-container');
+                const loading = document.getElementById('transcripts-loading');
+                
+                try {
+                    loading.style.display = 'block';
+                    
+                    const response = await fetch('/transcripts/');
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch transcripts');
+                    }
+                    
+                    const transcripts = await response.json();
+                    
+                    loading.style.display = 'none';
+                    
+                    if (transcripts.length === 0) {
+                        container.innerHTML = '<p>No transcripts found. Start by creating a new transcription.</p>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    
+                    transcripts.forEach(transcript => {
+                        const created = new Date(transcript.created_at).toLocaleString();
+                        
+                        html += `
+                            <div class="transcript-item" data-id="${transcript.id}">
+                                <h3>${transcript.original_file}</h3>
+                                <div class="transcript-meta">
+                                    <span><i class="ri-time-line"></i> ${formatDuration(transcript.duration_seconds)}</span>
+                                    <span><i class="ri-global-line"></i> ${transcript.language.toUpperCase()}</span>
+                                    <span><i class="ri-calendar-line"></i> ${created}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = html;
+                    
+                    // Add click event to transcript items
+                    document.querySelectorAll('.transcript-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const id = item.getAttribute('data-id');
+                            window.location.href = `/transcript/${id}`;
+                        });
+                    });
+                    
+                } catch (error) {
+                    loading.style.display = 'none';
+                    container.innerHTML = `<p>Error loading transcripts: ${error.message}</p>`;
+                }
+            }
+            
+            // Copy button
+            copyBtn.addEventListener('click', () => {
+                const text = transcriptText.textContent;
+                navigator.clipboard.writeText(text)
+                    .then(() => alert('Transcript copied to clipboard'))
+                    .catch(() => alert('Failed to copy. Try selecting and copying manually.'));
+            });
+            
+            // Download button
+            downloadBtn.addEventListener('click', () => {
+                const transcript = transcriptText.textContent;
+                const filename = document.getElementById('filename-value').textContent;
+                
+                // Create a blob and download link
+                const blob = new Blob([transcript], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${filename}_transcript.txt`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            });
+            
+            // Navigation
+            newTranscriptionBtn.addEventListener('click', showUploadArea);
+            newTranscriptionListBtn.addEventListener('click', showUploadArea);
+            newTranscriptionNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                showUploadArea();
+            });
+            
+            viewAllBtn.addEventListener('click', showTranscriptsList);
+            viewAllNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                showTranscriptsList();
+            });
+            
+            errorBackBtn.addEventListener('click', showUploadArea);
+            
+            // UI state functions
+            function showLoader() {
+                uploadArea.style.display = 'none';
+                resultArea.style.display = 'none';
+                errorArea.style.display = 'none';
+                transcriptsList.style.display = 'none';
+                loaderArea.style.display = 'flex';
+                updateNavigation('new');
+            }
+            
+            function showResult(data) {
+                loaderArea.style.display = 'none';
+                uploadArea.style.display = 'none';
+                errorArea.style.display = 'none';
+                transcriptsList.style.display = 'none';
+                
+                // Update transcript data
+                if (transcriptText) {
+                    transcriptText.textContent = data.transcript || 'No transcript available';
+                } else {
+                    console.error('Element transcriptText not found');
+                }
+                
+                if (sourceFilename) {
+                    sourceFilename.textContent = data.filename || 'Unknown file';
+                }
+                
+                if (durationText) {
+                    durationText.textContent = formatDuration(data.duration_seconds || 0);
+                }
+                
+                if (languageText) {
+                    languageText.textContent = data.language || 'Unknown';
+                }
+                
+                // Save transcript ID globally
+                currentTranscriptId = data.transcript_id || '';
+                console.log('Current transcript ID set to:', currentTranscriptId);
+                
+                // Reset the sales intelligence section
+                if (salesIntelligence) {
+                    salesIntelligence.style.display = 'none';
+                }
+                
+                if (salesData) {
+                    salesData.innerHTML = '';
+                }
+                
+                // Show the analyze button if we have a valid transcript
+                const analyzeSection = document.getElementById('analyze-section');
+                if (analyzeSection) {
+                    analyzeSection.style.display = data.transcript && data.transcript_id ? 'block' : 'none';
+                }
+                
+                resultArea.style.display = 'flex';
+                updateNavigation('new');
+                
+                // Check for demo mode
+                checkDemoMode(data.transcript);
+            }
+            
+            // Alias for showResult to maintain backward compatibility
+            const displayResults = showResult;
+            
+            function showUploadArea() {
+                loaderArea.style.display = 'none';
+                resultArea.style.display = 'none';
+                errorArea.style.display = 'none';
+                transcriptsList.style.display = 'none';
+                
+                fileInput.value = '';
+                fileDetails.style.display = 'none';
+                uploadArea.style.display = 'flex';
+                updateNavigation('new');
+            }
+            
+            function showTranscriptsList() {
+                loaderArea.style.display = 'none';
+                resultArea.style.display = 'none';
+                errorArea.style.display = 'none';
+                uploadArea.style.display = 'none';
+                
+                transcriptsList.style.display = 'flex';
+                fetchTranscripts();
+                updateNavigation('list');
+            }
+            
+            function showError(message) {
+                loaderArea.style.display = 'none';
+                uploadArea.style.display = 'none';
+                resultArea.style.display = 'none';
+                transcriptsList.style.display = 'none';
+                
+                errorMessage.innerHTML = message;
+                errorArea.style.display = 'flex';
+                updateNavigation('new');
+            }
+            
+            function updateNavigation(active) {
+                if (active === 'new') {
+                    newTranscriptionNav.classList.add('active');
+                    viewAllNav.classList.remove('active');
+                } else {
+                    newTranscriptionNav.classList.remove('active');
+                    viewAllNav.classList.add('active');
+                }
+            }
+            
+            // Check if transcript_id is provided in template context (from transcript page route)
+            async function checkForTranscriptId() {
+                // Get transcript ID from URL if available
+                const urlParts = window.location.pathname.split('/');
+                if (urlParts.length >= 3 && urlParts[1] === 'transcript') {
+                    const transcriptId = urlParts[2];
+                    if (transcriptId) {
+                        await loadTranscript(transcriptId);
+                    }
+                }
+            }
+
+            // Load a specific transcript by ID
+            async function loadTranscript(transcriptId) {
+                showLoader();
+                
+                try {
+                    // Fetch transcript data
+                    const response = await fetch(`/transcripts/${transcriptId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load transcript');
+                    }
+                    
+                    const transcript = await response.json();
+                    
+                    // Format the result data to match our expected structure
+                    const result = {
+                        transcript_id: transcript.id,
+                        filename: transcript.storage_path ? transcript.storage_path.split('/').pop() : 'Unknown file',
+                        transcript: transcript.transcript || 'No transcript available',
+                        duration_seconds: transcript.duration_seconds || 0,
+                        language: transcript.language || 'Unknown',
+                        file_url: transcript.storage_path || null
+                    };
+                    
+                    displayResults(result);
+                    
+                } catch (error) {
+                    showError(error.message);
+                }
+            }
+
+            // Check if we're in demo mode based on the transcript result
+            function checkDemoMode(transcript) {
+                const demoBanner = document.getElementById('demo-banner');
+                if (transcript && transcript.includes("modo de demonstração")) {
+                    demoBanner.style.display = 'block';
+                }
+            }
+
+            // Start with upload area or load specific transcript if ID is in URL
+            checkForTranscriptId().then(() => {
+                // Only show upload area if no transcript was loaded
+                if (document.querySelector('#result-area').style.display !== 'flex') {
+                    showUploadArea();
+                }
+            });
+
+            // Define the analyze function to reuse for both buttons
+            async function analyzeTranscript() {
+                try {
+                    const id = currentTranscriptId;
+                    if (!id || id === '') {
+                        alert('Cannot analyze: No transcript ID found');
+                        return;
+                    }
+                    
+                    // Disable both buttons if they exist
+                    if (analyzeBtn) analyzeBtn.disabled = true;
+                    if (analyzeSalesBtn) analyzeSalesBtn.disabled = true;
+                    
+                    // Update button text for the clicked button
+                    const clickedBtn = this || analyzeSalesBtn || analyzeBtn;
+                    const originalHTML = clickedBtn.innerHTML;
+                    clickedBtn.innerHTML = '<i class="ri-loader-4-line"></i> Analyzing...';
+                    
+                    console.log('Analyzing transcript ID:', id);
+                    
+                    const response = await fetch(`/transcripts/${id}/analyze`, {
+                        method: 'POST'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Analysis failed: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('Sales data received:', data.sales_data);
+                    displaySalesData(data.sales_data);
+                    
+                } catch (error) {
+                    console.error('Analysis error:', error);
+                    alert(`Error analyzing transcript: ${error.message}`);
+                } finally {
+                    // Re-enable both buttons
+                    if (analyzeBtn) {
+                        analyzeBtn.disabled = false;
+                        analyzeBtn.innerHTML = '<i class="ri-ai-generate"></i> Analyze';
+                    }
+                    if (analyzeSalesBtn) {
+                        analyzeSalesBtn.disabled = false;
+                        analyzeSalesBtn.innerHTML = '<i class="ri-ai-generate"></i> Analyze Sales Intelligence';
+                    }
+                }
+            }
+
+            // Attach event listeners to both analyze buttons
+            if (analyzeBtn) {
+                analyzeBtn.addEventListener('click', analyzeTranscript);
+            }
+            
+            if (analyzeSalesBtn) {
+                analyzeSalesBtn.addEventListener('click', analyzeTranscript);
+            }
+            
+            // Display sales intelligence data
+            function displaySalesData(data) {
+                if (!data) {
+                    salesData.innerHTML = '<p>No sales data available</p>';
+                    salesIntelligence.style.display = 'block';
+                    return;
+                }
+                
+                console.log('Rendering sales data:', data);
+                
+                // Clear previous data
+                salesData.innerHTML = '';
+                
+                // Company
+                if (data.empresa) {
+                    addSalesDataItem('Company', data.empresa);
+                }
+                
+                // Stakeholders
+                if (data.stakeholders && data.stakeholders.length > 0) {
+                    addSalesDataItemList('Stakeholders', data.stakeholders);
+                }
+                
+                // Pain points
+                if (data.dores && data.dores.length > 0) {
+                    addSalesDataItemList('Pain Points', data.dores);
+                }
+                
+                // Opportunities
+                if (data.oportunidades && data.oportunidades.length > 0) {
+                    addSalesDataItemList('Opportunities', data.oportunidades);
+                }
+                
+                // Solutions
+                if (data.solucoes && data.solucoes.length > 0) {
+                    addSalesDataItemList('Solutions', data.solucoes);
+                }
+                
+                // Research triggers
+                if (data.gatilhos_pesquisa && data.gatilhos_pesquisa.length > 0) {
+                    addSalesDataItemList('Research Topics', data.gatilhos_pesquisa);
+                }
+                
+                // Brands
+                if (data.marcas && data.marcas.length > 0) {
+                    addSalesDataItemList('Brands', data.marcas);
+                }
+                
+                // Context for personalization
+                if (data.contexto_personalizacao) {
+                    addSalesDataItem('Personalization Context', data.contexto_personalizacao);
+                }
+                
+                // HARDCODED SPIN/BANT - EXIBIÇÃO GARANTIDA
+                
+                // HARDCODED SPIN DATA - First item
+                const spinHTML = `
+                    <div class="sales-data-item" style="display:block !important; background-color:#f5f5f5; padding:1rem; border-radius:0.5rem; margin-bottom:1rem; border:1px solid #e0e0e0;">
+                        <h4 style="color:#7158e2; margin-bottom:0.5rem;">SPIN Analysis</h4>
+                        <h5 style="margin-top:8px; color:#333;">Situation</h5>
+                        <p>${data.spin?.situacao || ''}</p>
+                        <h5 style="margin-top:8px; color:#333;">Problem</h5>
+                        <p>${data.spin?.problema || ''}</p>
+                        <h5 style="margin-top:8px; color:#333;">Implication</h5>
+                        <p>${data.spin?.implicacao || ''}</p>
+                        <h5 style="margin-top:8px; color:#333;">Need-Payoff</h5>
+                        <p>${data.spin?.necessidade || ''}</p>
+                    </div>
+                `;
+                
+                // HARDCODED BANT DATA - Last item
+                const bantHTML = `
+                    <div class="sales-data-item" style="display:block !important; background-color:#f5f5f5; padding:1rem; border-radius:0.5rem; margin-bottom:1rem; border:1px solid #e0e0e0;">
+                        <h4 style="color:#7158e2; margin-bottom:0.5rem;">BANT Analysis</h4>
+                        <h5 style="margin-top:8px; color:#333;">Budget</h5>
+                        <p>${data.bant?.budget || ''}</p>
+                        <h5 style="margin-top:8px; color:#333;">Authority</h5>
+                        <p>${data.bant?.authority || ''}</p>
+                        <h5 style="margin-top:8px; color:#333;">Need</h5>
+                        <p>${data.bant?.need || ''}</p>
+                        <h5 style="margin-top:8px; color:#333;">Timeline</h5>
+                        <p>${data.bant?.timeline || ''}</p>
+                    </div>
+                `;
+                
+                // Insert the HTML directly
+                const spinBantContainer = document.createElement('div');
+                spinBantContainer.innerHTML = spinHTML + bantHTML;
+                salesData.appendChild(spinBantContainer);
+                
+                // Show the sales intelligence section
+                salesIntelligence.style.display = 'block';
+            }
+            
+            // Helper function to add a sales data item
+            function addSalesDataItem(title, content) {
+                const item = document.createElement('div');
+                item.className = 'sales-data-item';
+                
+                const titleEl = document.createElement('h4');
+                titleEl.textContent = title;
+                
+                const contentEl = document.createElement('p');
+                contentEl.textContent = content;
+                
+                item.appendChild(titleEl);
+                item.appendChild(contentEl);
+                salesData.appendChild(item);
+            }
+            
+            // Helper function to add a sales data item with a list
+            function addSalesDataItemList(title, items) {
+                const item = document.createElement('div');
+                item.className = 'sales-data-item';
+                
+                const titleEl = document.createElement('h4');
+                titleEl.textContent = title;
+                item.appendChild(titleEl);
+                
+                if (Array.isArray(items) && items.length > 0) {
+                    const list = document.createElement('ul');
+                    items.forEach(text => {
+                        const li = document.createElement('li');
+                        li.textContent = text;
+                        list.appendChild(li);
+                    });
+                    item.appendChild(list);
+                } else {
+                    const contentEl = document.createElement('p');
+                    contentEl.textContent = items;
+                    item.appendChild(contentEl);
+                }
+                
+                salesData.appendChild(item);
+            }
+
+            function showTranscript(data) {
+                const {
+                    transcript_id,
+                    filename,
+                    transcript,
+                    duration_seconds,
+                    language
+                } = data;
+
+                currentTranscriptId = transcript_id;
+                
+                // Format duration for display
+                const displayDuration = formatDuration(duration_seconds);
+
+                // Update metadata
+                document.getElementById('duration-value').textContent = displayDuration;
+                document.getElementById('language-value').textContent = language.toUpperCase();
+                document.getElementById('filename-value').textContent = filename;
+                
+                // Set transcript text
+                transcriptText.textContent = transcript;
+                
+                // Show the results
+                uploadArea.style.display = 'none';
+                loaderArea.style.display = 'none';
+                resultArea.style.display = 'block';
+                
+                // Update URL with transcript ID
+                window.history.pushState({}, '', `/transcript/${transcript_id}`);
+            }
+
+            // Initialize transcript display from an ID
+            async function loadTranscriptById(transcriptId) {
+                try {
+                    showLoader();
+                    
+                    const response = await fetch(`/transcripts/${transcriptId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load transcript');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    const formattedData = {
+                        transcript_id: data.id,
+                        filename: data.storage_path,
+                        transcript: data.transcript,
+                        duration_seconds: data.duration_seconds,
+                        language: data.language
+                    };
+                    
+                    showTranscript(formattedData);
+                    
+                } catch (error) {
+                    console.error('Error loading transcript:', error);
+                    showError('Failed to load transcript');
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
